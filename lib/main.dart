@@ -15,16 +15,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         accentColor: Colors.amber,
         fontFamily: 'Quicksand',
-        // textTheme: ThemeData.light().textTheme.copyWith(
-        //   titleMedium: TextStyle(
-        //     fontFamily: 'OpenSans',
-        //     fontSize: 16,
-        //     fontWeight: FontWeight.bold,
-        //   )
-        // ),
         appBarTheme: AppBarTheme(
           titleTextStyle: TextStyle(fontFamily: 'OpenSans',fontSize: 20,fontWeight: FontWeight.bold)
-        )
+        ),
+        
       ),
       home: MyHomePage(),
     );
@@ -43,11 +37,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final titleController = TextEditingController();
   final amountController = TextEditingController();
 
-  void _addNewTransaction(String txTitle, double txAmount) {
+  void _addNewTransaction(String txTitle, double txAmount,DateTime choosenDate) {
     final newTx = Transaction(
       title: txTitle,
       amount: txAmount,
-      date: DateTime.now(),
+      date: choosenDate,
       id: DateTime.now().toString(),
     );
 
