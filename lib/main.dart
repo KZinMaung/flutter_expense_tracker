@@ -16,9 +16,10 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.amber,
         fontFamily: 'Quicksand',
         appBarTheme: AppBarTheme(
-          titleTextStyle: TextStyle(fontFamily: 'OpenSans',fontSize: 20,fontWeight: FontWeight.bold)
-        ),
-        
+            titleTextStyle: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold)),
       ),
       home: MyHomePage(),
     );
@@ -36,8 +37,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [];
   final titleController = TextEditingController();
   final amountController = TextEditingController();
+  var _showChart = false;
 
-  void _addNewTransaction(String txTitle, double txAmount,DateTime choosenDate) {
+  void _addNewTransaction(
+      String txTitle, double txAmount, DateTime choosenDate) {
     final newTx = Transaction(
       title: txTitle,
       amount: txAmount,
@@ -51,50 +54,87 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<Transaction> get _recentTransactions {
-    return _userTransactions.where((tx){
+    return _userTransactions.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(Duration(days: 7)));
     }).toList();
   }
+
   void _startAddNewTransaction(BuildContext ctx) {
     showModalBottomSheet(
       context: ctx,
       builder: (_) {
         return GestureDetector(
-          onTap: () {},
-          behavior: HitTestBehavior.opaque,
-          child: NewTransaction(_addNewTransaction)
-        );
+            onTap: () {},
+            behavior: HitTestBehavior.opaque,
+            child: NewTransaction(_addNewTransaction));
       },
     );
   }
 
-  void _deleteTransaction(String id){
+  void _deleteTransaction(String id) {
     setState(() {
-       _userTransactions.removeWhere((tx) => tx.id == id);
+      _userTransactions.removeWhere((tx) => tx.id == id);
     });
   }
 
-  
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final appBar = AppBar(
+      title: Text('Personal Expenses'),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _startAddNewTransaction(context),
+        ),
+      ],
+    );
+    final txListWidget = Container(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.7,
+        child: TransactionList(_userTransactions, _deleteTransaction));
+
+    final chartWidget = Container(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.7,
+        child: Chart(_recentTransactions));
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Personal Expenses'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _startAddNewTransaction(context),
-          ),
-        ],
-      ),
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            
-            Chart(_recentTransactions),
-            TransactionList(_userTransactions,_deleteTransaction),
+            if (isLandscape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Show Chart:"),
+                  Switch(
+                      value: _showChart,
+                      onChanged: (val) {
+                        setState(() {
+                          _showChart = val;
+                        });
+                      })
+                ],
+              ),
+            if (isLandscape) _showChart ? chartWidget : txListWidget,
+            if (!isLandscape)
+            //chart Widget with width = 0.3
+              Container(
+                  height: (mediaQuery.size.height -
+                          appBar.preferredSize.height -
+                          mediaQuery.padding.top) *
+                      0.3,
+                  child: Chart(_recentTransactions)),
+            if (!isLandscape) txListWidget
           ],
         ),
       ),
